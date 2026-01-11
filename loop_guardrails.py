@@ -3665,7 +3665,8 @@ class MultiAgentOrchestrator:
         self, 
         task_ids: List[str],
         auto_merge: bool = True,
-        auto_cleanup: bool = True
+        auto_cleanup: bool = True,
+        wait_for_agents: bool = False
     ) -> OrchestrationResult:
         """Execute the full parallel orchestration workflow.
         
@@ -3675,6 +3676,7 @@ class MultiAgentOrchestrator:
             task_ids: Task IDs to execute in parallel
             auto_merge: If True, automatically merge on completion
             auto_cleanup: If True, clean up worktrees after merge
+            wait_for_agents: If True, keep sessions pending for real agent pickup
             
         Returns:
             OrchestrationResult with metrics
@@ -3690,14 +3692,34 @@ class MultiAgentOrchestrator:
             spawned = self.spawn_all_agents(sessions)
             
             # 3. Wait for completion
-            # Note: In production, agents would run externally
-            # For this implementation, we simulate by marking sessions complete
             completed_count = 0
             failed_count = 0
             
-            # Since we can't actually spawn external agents, we just track state
+            if wait_for_agents:
+                # Real mode: Keep sessions in "spawned" state for VS Code extension to pick up
+                # Extension polls /api/orchestrator/sessions/pending and spawns Copilot agents
+                # Return immediately - merging/cleanup happens when agents report completion
+                return OrchestrationResult(
+                    success=True,
+                    agents_spawned=spawned,
+                    agents_completed=0,
+                    agents_failed=0,
+                    conflicts=0,
+                    all_merged=False,
+                    time_started=start_time,
+                    time_completed=None,  # Not completed yet
+                    time_saved_seconds=0,
+                    tasks_parallelized=task_ids,
+                    errors=[],
+                    metrics={
+                        "mode": "wait_for_agents",
+                        "sessions_pending": spawned,
+                        "hint": "Poll /api/orchestrator/status for completion"
+                    }
+                )
+            
+            # Simulation mode: Auto-complete sessions immediately
             for session in sessions:
-                # Simulated: mark as working then completed
                 session.status = "completed"
                 session.completed_at = utc_now_iso()
                 session.progress = 100

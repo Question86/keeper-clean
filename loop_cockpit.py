@@ -2412,6 +2412,7 @@ def api_orchestrator_execute():
         taskIds: List[str] - Task IDs to execute in parallel
         autoMerge: bool - Auto-merge on completion (default: true)
         autoCleanup: bool - Auto-cleanup worktrees (default: true)
+        waitForAgents: bool - If true, keep sessions pending for real agent pickup (default: false)
     
     Returns:
         success: bool
@@ -2430,6 +2431,7 @@ def api_orchestrator_execute():
         task_ids = data.get("taskIds", [])
         auto_merge = data.get("autoMerge", True)
         auto_cleanup = data.get("autoCleanup", True)
+        wait_for_agents = data.get("waitForAgents", False)
         
         if not task_ids:
             return jsonify({
@@ -2440,7 +2442,8 @@ def api_orchestrator_execute():
         result = orch.execute_parallel(
             task_ids=task_ids,
             auto_merge=auto_merge,
-            auto_cleanup=auto_cleanup
+            auto_cleanup=auto_cleanup,
+            wait_for_agents=wait_for_agents
         )
         
         return jsonify({
@@ -2483,6 +2486,183 @@ def api_orchestrator_rollback():
         return jsonify({
             "success": success,
             "message": message
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+@app.route('/api/orchestrator/sessions/pending', methods=['GET'])
+def api_orchestrator_sessions_pending():
+    """Get list of pending/spawned sessions awaiting agent pickup.
+    
+    Returns:
+        sessions: List of session data for spawned sessions
+    """
+    try:
+        orch = get_orchestrator()
+        status = orch.get_status()
+        
+        # Return sessions with status "pending" or "spawned"
+        pending_sessions = [
+            s for s in status["sessions"]
+            if s.get("status") in ["pending", "spawned"]
+        ]
+        
+        return jsonify({
+            "sessions": pending_sessions
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+@app.route('/api/orchestrator/sessions/<agent_id>/claim', methods=['POST'])
+def api_orchestrator_session_claim(agent_id):
+    """Claim a session for agent processing.
+    
+    Args:
+        agent_id: Agent ID to claim
+        
+    Returns:
+        success: bool
+        session: Session data with prompt
+    """
+    try:
+        import traceback
+        print(f"[CLAIM] Attempting to claim session: {agent_id}")
+        orch = get_orchestrator()
+        session = orch._sessions.get(agent_id)
+        print(f"[CLAIM] Session found: {session is not None}")
+        
+        if not session:
+            return jsonify({
+                "success": False,
+                "error": f"Session {agent_id} not found"
+            }), 404
+        
+        # Mark as working
+        session.status = "working"
+        orch._create_session_file(session)
+        
+        # Get task spec to create prompt
+        import os
+        import json
+        
+        task_file = os.path.join(orch.workspace_root, "tasks", f"task_{session.task_id}.md")
+        task_description = f"Work on {session.task_id}"
+        if os.path.exists(task_file):
+            with open(task_file, 'r', encoding='utf-8') as f:
+                task_description = f.read()
+        
+        # Get current loop
+        current_json_path = os.path.join(orch.workspace_root, "current.json")
+        current_loop = 63  # Default
+        if os.path.exists(current_json_path):
+            with open(current_json_path, 'r', encoding='utf-8') as f:
+                current_data = json.load(f)
+                current_loop = current_data.get("loop", 63)
+        
+        # Build prompt using agentSpawner format
+        prompt = f"""You are Agent {agent_id} working on {session.task_id} in Loop {current_loop}.
+
+## Working Directory
+{session.worktree_path}
+
+## Task Specification
+{task_description}
+
+## Instructions
+1. Read the task specification carefully
+2. Create a report file following REPORT-FIRST law:
+   - File: reports/report_{session.task_id}_L{current_loop}_v01.md
+   - Include: objective, approach, implementation details, outcome
+3. Implement the required changes
+4. Ensure all acceptance criteria are met
+5. Update current.json lastTaskWorked to {session.task_id}
+
+Work autonomously and complete the full task."""
+        
+        return jsonify({
+            "success": True,
+            "session": {
+                "agentId": session.agent_id,
+                "taskId": session.task_id,
+                "worktreePath": str(session.worktree_path),
+                "prompt": prompt,
+                "status": session.status,
+                "progress": session.progress
+            }
+        })
+        
+    except Exception as e:
+        import traceback
+        print(f"[CLAIM ERROR] Exception claiming session: {e}")
+        traceback.print_exc()
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
+@app.route('/api/orchestrator/sessions/<agent_id>/status', methods=['POST'])
+def api_orchestrator_session_status(agent_id):
+    """Update session status and progress.
+    
+    Args:
+        agent_id: Agent ID to update
+        
+    Request JSON:
+        status: str - New status (working/completed/failed)
+        progress: int - Progress percentage (0-100)
+        result_summary: str - Result summary (for completed)
+        error: str - Error message (for failed)
+        message: str - Optional status message
+        
+    Returns:
+        success: bool
+    """
+    try:
+        orch = get_orchestrator()
+        session = orch._sessions.get(agent_id)
+        
+        if not session:
+            return jsonify({
+                "success": False,
+                "error": f"Session {agent_id} not found"
+            }), 404
+        
+        data = request.get_json(silent=True) or {}
+        
+        # Update session fields
+        if "status" in data:
+            session.status = data["status"]
+        if "progress" in data:
+            session.progress = data["progress"]
+        if "result_summary" in data:
+            session.result_summary = data["result_summary"]
+        if "error" in data:
+            session.error = data["error"]
+        
+        # Mark completion time if completed/failed
+        if session.status in ["completed", "failed"] and not session.completed_at:
+            from loop_guardrails import utc_now_iso
+            session.completed_at = utc_now_iso()
+        
+        # Update session file
+        orch._create_session_file(session)
+        
+        return jsonify({
+            "success": True,
+            "agent_id": agent_id,
+            "status": session.status,
+            "progress": session.progress
         })
         
     except Exception as e:
@@ -3325,4 +3505,6 @@ if __name__ == '__main__':
     print("=" * 60)
     # NOTE (Windows/Python 3.13): Werkzeug's watchdog reloader can crash with
     # TypeError: 'handle' must be a _ThreadHandle. Disable reloader for stability.
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    # Also disable threading to avoid potential race conditions with orchestrator state
+    # NOTE: Setting debug=False to prevent silent crashes
+    app.run(debug=False, host='0.0.0.0', port=5000, use_reloader=False, threaded=False)

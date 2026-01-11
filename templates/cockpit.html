@@ -1071,6 +1071,11 @@
             openSearchResult(path);
         });
 
+        // Track last status to avoid unnecessary DOM rebuilds (TASK_0120: fix flickering)
+        let lastStatus = null;
+        let lastLoop = null;
+        let lastBootstrapExists = null;
+
         async function fetchStatus() {
             try {
                 const response = await fetch('/api/status');
@@ -1087,22 +1092,33 @@
                 const seedIdeaPanel = document.getElementById('seed-idea-panel');
                 // TASK_0018: task monitor panels removed
                 
+                // TASK_0120: Only rebuild action panel when status/loop/bootstrapExists actually changes
+                const statusChanged = (lastStatus !== data.status || lastLoop !== data.loop || lastBootstrapExists !== data.bootstrapExists);
+                
                 // Show/hide based on status
                 if (data.status === 'ACTIVE') {
                     if (seedIdeaPanel) seedIdeaPanel.style.display = 'block';
                     // TASK_0088: Start auto-finalization monitor
                     startAutoFinalizeMonitor();
-                    // TASK_0090: Refresh worktree status
-                    refreshWorktreeStatus();
-                    // TASK_0091: Refresh orchestrator status
-                    refreshOrchestratorStatus();
+                    // TASK_0090: Refresh worktree status (only on change, not every poll)
+                    if (statusChanged) {
+                        refreshWorktreeStatus();
+                    }
+                    // TASK_0091: Refresh orchestrator status (only on change, not every poll)
+                    if (statusChanged) {
+                        refreshOrchestratorStatus();
+                    }
                 } else {
                     if (seedIdeaPanel) seedIdeaPanel.style.display = 'none';
                     // TASK_0088: Stop auto-finalization monitor when not ACTIVE
                     stopAutoFinalizeMonitor();
                 }
                 
-                if (data.status === 'READY_FOR_RESET') {
+                // TASK_0120: Only rebuild action panel innerHTML if status/loop changed
+                // This prevents the DOM from being destroyed and recreated every poll
+                const shouldRebuildPanel = statusChanged;
+                
+                if (shouldRebuildPanel && data.status === 'READY_FOR_RESET') {
                     // Check if bootstrap exists to determine actual state
                     const bootstrapExists = data.bootstrapExists;
                     const gateBlocked = data.gateStatus === 'BLOCKED';
@@ -1169,7 +1185,7 @@
                             </div>
                         `;
                     }
-                } else if (data.status === 'FINALIZED') {
+                } else if (shouldRebuildPanel && data.status === 'FINALIZED') {
                     const canReset = data.pendingArchiv !== null;
                     actionPanel.innerHTML = `
                         <div style="background: rgba(121, 121, 121, 0.15); padding: 20px; border-radius: 10px; border: 2px solid #797979;">
@@ -1187,7 +1203,7 @@
                             <div id="inline-reset-status" style="margin-top: 20px; font-size: 1em;"></div>
                         </div>
                     `;
-                } else if (data.status === 'ACTIVE') {
+                } else if (shouldRebuildPanel && data.status === 'ACTIVE') {
                     actionPanel.innerHTML = `
                         <div style="background: rgba(132, 132, 132, 0.15); padding: 20px; border-radius: 10px; border: 2px solid #808080;">
                             <div style="font-size: 1.5em; margin-bottom: 20px;">💼 LOOP ${data.loop} ACTIVE</div>
@@ -1497,6 +1513,13 @@
                             </div>
                         </div>
                     `;
+                }
+                
+                // TASK_0120: Remember the status to prevent rebuilding on next poll
+                if (shouldRebuildPanel) {
+                    lastStatus = data.status;
+                    lastLoop = data.loop;
+                    lastBootstrapExists = data.bootstrapExists;
                 }
                 
                 // Update stats grid
@@ -2765,7 +2788,8 @@
                 if (currentAnalysis.parallelizable && currentAnalysis.parallelizable.length > 0) {
                     html += `<div style="color:#50c878;">✅ Parallel: ${currentAnalysis.parallelizable.length} cluster(s)</div>`;
                     currentAnalysis.parallelizable.forEach((cluster, i) => {
-                        html += `<div style="margin-left:15px; color:#cccccc; font-size:0.9em;">${cluster.join(', ')}</div>`;
+                        const tasks = Array.isArray(cluster) ? cluster : (cluster.tasks || []);
+                        html += `<div style="margin-left:15px; color:#cccccc; font-size:0.9em;">${tasks.join(', ')}</div>`;
                     });
                 } else {
                     html += `<div style="color:#808080;">No parallelizable tasks</div>`;
@@ -2797,10 +2821,11 @@
             let html = '';
             
             clusters.forEach((cluster, clusterIdx) => {
+                const tasks = Array.isArray(cluster) ? cluster : (cluster.tasks || []);
                 html += `<div style="margin-bottom: 12px; padding: 8px; background: rgba(80, 200, 160, 0.05); border-radius: 5px; border-left: 3px solid #50c8a0;">`;
-                html += `<div style="color: #50c8a0; font-weight: bold; margin-bottom: 5px; font-size: 0.9em;">Cluster ${clusterIdx + 1} (${cluster.length} tasks)</div>`;
+                html += `<div style="color: #50c8a0; font-weight: bold; margin-bottom: 5px; font-size: 0.9em;">Cluster ${clusterIdx + 1} (${tasks.length} tasks)</div>`;
                 
-                cluster.forEach(taskId => {
+                tasks.forEach(taskId => {
                     html += `
                         <label style="display: block; padding: 4px; cursor: pointer; color: #cccccc;">
                             <input type="checkbox" value="${taskId}" data-cluster="${clusterIdx}" 
@@ -3035,7 +3060,8 @@
                     return;
                 }
                 
-                taskIds = analysis.analysis.parallelizable[0];
+                const firstCluster = analysis.analysis.parallelizable[0];
+                taskIds = Array.isArray(firstCluster) ? firstCluster : (firstCluster.tasks || []);
             }
             
             const maxAgents = parseInt(document.getElementById('max-agents').value);
@@ -3062,19 +3088,31 @@
                     body: JSON.stringify({
                         taskIds: taskIds.slice(0, maxAgents),
                         autoMerge: true,
-                        autoCleanup: true
+                        autoCleanup: true,
+                        waitForAgents: true  // Real agent mode - VS Code extension will spawn agents
                     })
                 });
                 
                 const result = await resp.json();
                 
                 if (result.success) {
-                    stopOrchestratorPolling();
-                    updateProgress(100, `✅ Completed: ${result.result.agents_completed}/${result.result.agents_spawned}`);
-                    setTimeout(() => {
-                        refreshOrchestratorStatus();
-                        document.getElementById('execution-progress').style.display = 'none';
-                    }, 3000);
+                    // In waitForAgents mode, sessions are pending - keep polling for completion
+                    const agentsSpawned = result.result.agents_spawned || 0;
+                    const isWaitingForAgents = result.result.metrics && result.result.metrics.mode === 'wait_for_agents';
+                    
+                    if (isWaitingForAgents && agentsSpawned > 0) {
+                        // Don't stop polling - agents are working
+                        updateProgress(10, `🚀 Spawned ${agentsSpawned} agents - waiting for VS Code to claim...`);
+                        // Polling continues via startOrchestratorPolling() - it will update progress
+                    } else {
+                        // Simulation mode or no agents - complete immediately
+                        stopOrchestratorPolling();
+                        updateProgress(100, `✅ Completed: ${result.result.agents_completed}/${result.result.agents_spawned}`);
+                        setTimeout(() => {
+                            refreshOrchestratorStatus();
+                            document.getElementById('execution-progress').style.display = 'none';
+                        }, 3000);
+                    }
                 } else {
                     stopOrchestratorPolling();
                     updateProgress(0, `❌ Failed: ${result.error}`);
@@ -3121,10 +3159,31 @@
                     const completedSessions = status.sessions.filter(s => 
                         s.status === 'completed' || s.status === 'failed'
                     ).length;
+                    const workingSessions = status.sessions.filter(s => s.status === 'working').length;
+                    const spawnedSessions = status.sessions.filter(s => s.status === 'spawned').length;
                     
                     if (totalSessions > 0) {
                         const percent = Math.round((completedSessions / totalSessions) * 100);
-                        updateProgress(percent, `⚙️ Progress: ${completedSessions}/${totalSessions} sessions (${activeSessions.length} active)`);
+                        let statusText = '';
+                        
+                        if (spawnedSessions > 0 && workingSessions === 0 && completedSessions === 0) {
+                            // Waiting for VS Code to claim
+                            statusText = `🚀 ${spawnedSessions} session(s) spawned - waiting for VS Code extension to claim...`;
+                        } else if (workingSessions > 0) {
+                            // Agents are working
+                            statusText = `⚙️ ${workingSessions} agent(s) working, ${completedSessions}/${totalSessions} complete`;
+                        } else if (completedSessions > 0) {
+                            statusText = `✅ ${completedSessions}/${totalSessions} sessions complete`;
+                        } else {
+                            statusText = `⏳ Progress: ${completedSessions}/${totalSessions}`;
+                        }
+                        
+                        // Progress bar: spawned=10%, working=50%, completed=100%
+                        let visualPercent = 10; // base for spawned
+                        if (workingSessions > 0) visualPercent = 30 + Math.round((completedSessions / totalSessions) * 70);
+                        else if (completedSessions > 0) visualPercent = percent;
+                        
+                        updateProgress(visualPercent, statusText);
                     }
                     
                     // Update session list UI

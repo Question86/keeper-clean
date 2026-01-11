@@ -43,6 +43,22 @@
       {
         "command": "keeper.showAgentOutput",
         "title": "Keeper: Show Agent Output"
+      },
+      {
+        "command": "keeper.startSessionPoller",
+        "title": "Keeper: Start Session Poller (Multi-Agent)"
+      },
+      {
+        "command": "keeper.stopSessionPoller",
+        "title": "Keeper: Stop Session Poller"
+      },
+      {
+        "command": "keeper.showPollerOutput",
+        "title": "Keeper: Show Session Poller Output"
+      },
+      {
+        "command": "keeper.pollerStatus",
+        "title": "Keeper: Session Poller Status"
       }
     ],
     "configuration": {
