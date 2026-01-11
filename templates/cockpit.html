@@ -1970,7 +1970,7 @@
                     label: 'PRE-AUDIT',
                     description: 'Integrity checks ready',
                     emoji: '🔬',
-                    condition: (s, b, p) => false // Manual trigger only
+                    condition: (s, b, p) => s === 'READY_FOR_FINALIZATION'
                 },
                 {
                     id: 'finalizing',
