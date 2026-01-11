@@ -1513,6 +1513,51 @@
                             </div>
                         </div>
                     `;
+                } else if (shouldRebuildPanel && data.status === 'READY_FOR_FINALIZATION') {
+                    // READY_FOR_FINALIZATION: Show finalization panel with archive info
+                    actionPanel.innerHTML = `
+                        <div style="background: rgba(166, 166, 166, 0.15); padding: 25px; border-radius: 10px; border: 3px solid #a6a6a6;">
+                            <div style="font-size: 2.2em; margin-bottom: 15px; color: #a6a6a6; text-align: center;">
+                                🔬 PRE-AUDIT COMPLETE
+                            </div>
+                            
+                            <div style="background: rgba(0, 0, 0, 0.6); padding: 20px; margin: 20px auto; max-width: 700px; border-radius: 8px; border: 2px solid #a6a6a6;">
+                                <div style="font-size: 1.3em; margin-bottom: 20px; color: #7d7d7d; font-weight: bold;">📍 LOOP ${data.loop} READY FOR FINALIZATION</div>
+                                
+                                <div style="background: rgba(166, 166, 166, 0.2); padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                                    <div style="font-size: 1.1em; line-height: 1.8;">
+                                        ✅ All integrity checks passed<br>
+                                        ✅ Archive file ready: <strong style="color: #a6a6a6;">${data.archiveCurrent || 'ARCHIV_' + String(data.loop).padStart(4, '0') + '.md'}</strong><br>
+                                        ✅ Work summary captured<br>
+                                        ⏳ <strong style="color: #7d7d7d;">Waiting for FINALIZE action</strong>
+                                    </div>
+                                </div>
+                                
+                                <div style="font-size: 1.2em; margin: 20px 0; color: #808080; font-weight: bold; text-align: center;">
+                                    ⚡ CLICK TO FINALIZE:
+                                </div>
+                                
+                                <div style="text-align: center;">
+                                    <button onclick="executeFinalization()" id="big-finalize-button"
+                                        style="font-size: 2em; padding: 30px 60px; background: linear-gradient(135deg, #a6a6a6, #808080); 
+                                        border: 3px solid #a6a6a6; border-radius: 15px; color: #2c2c2c; font-weight: bold; 
+                                        cursor: pointer; box-shadow: 0 0 30px rgba(166, 166, 166, 0.4); 
+                                        transition: all 0.3s; text-transform: uppercase; letter-spacing: 2px;">
+                                        🏁 FINALIZE LOOP ${data.loop}
+                                    </button>
+                                </div>
+                                
+                                <div id="finalize-inline-status" style="margin-top: 20px; text-align: center; font-size: 1.1em;"></div>
+                                
+                                <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(166, 166, 166, 0.5); font-size: 0.95em; color: #808080;">
+                                    ℹ️ <strong>What happens next?</strong><br>
+                                    1. Archive moved to <code>archive/</code> folder<br>
+                                    2. Status changes to FINALIZED<br>
+                                    3. Bootstrap prepared for Loop ${data.loop + 1}
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
                 
                 // TASK_0120: Remember the status to prevent rebuilding on next poll
@@ -2169,6 +2214,55 @@
                 statusDiv.textContent = `❌ Error: ${error.message}`;
                 statusDiv.style.color = '#797979';
                 button.disabled = false;
+            }
+        }
+        
+        // executeFinalization - for READY_FOR_FINALIZATION status panel
+        async function executeFinalization() {
+            const button = document.getElementById('big-finalize-button');
+            const statusDiv = document.getElementById('finalize-inline-status');
+            
+            if (!confirm('Finalize Loop and prepare for reset?')) {
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = '⏳ FINALIZING...';
+            statusDiv.textContent = '⏳ Moving archive and updating status...';
+            statusDiv.style.color = '#808080';
+            
+            try {
+                const response = await fetch('/api/finalize-loop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = `✅ ${data.message}<br><br>🔄 Refreshing in 2 seconds...`;
+                    statusDiv.style.color = '#7d7d7d';
+                    button.textContent = '✅ FINALIZED';
+                    
+                    // Refresh after 2 seconds
+                    setTimeout(() => {
+                        fetchStatus();
+                    }, 2000);
+                } else {
+                    statusDiv.textContent = `❌ Error: ${data.error}`;
+                    statusDiv.style.color = '#797979';
+                    button.disabled = false;
+                    button.textContent = '🏁 FINALIZE LOOP';
+                }
+                
+            } catch (error) {
+                statusDiv.textContent = `❌ Error: ${error.message}`;
+                statusDiv.style.color = '#797979';
+                button.disabled = false;
+                button.textContent = '🏁 FINALIZE LOOP';
             }
         }
 
