@@ -1,0 +1,31 @@
+{
+  "MILESTONE": {
+    "id": "01",
+    "name": "Project Foundation",
+    "version": 1,
+    "created": "2026-01-10",
+    "status": "COMPLETED",
+    "completedAt": "2026-01-10",
+    "prototypeStatus": "PROTOTYPE_FINISHED"
+  },
+  "GOALS": [
+    {
+      "id": "G001",
+      "description": "Establish loop-based workflow",
+      "status": "COMPLETED",
+      "completedAt": "2026-01-10"
+    },
+    {
+      "id": "G002",
+      "description": "Implement memory-reset architecture",
+      "status": "COMPLETED",
+      "completedAt": "2026-01-10"
+    },
+    {
+      "id": "G003",
+      "description": "Create first functional task",
+      "status": "COMPLETED",
+      "completedAt": "2026-01-10"
+    }
+  ]
+}

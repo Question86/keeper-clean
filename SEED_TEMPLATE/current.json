@@ -1,0 +1,12 @@
+{
+  "STATE": {
+    "loop": 1,
+    "status": "READY_FOR_RESET",
+    "archiveCurrent": null,
+    "archiveInProgress": null,
+    "lastTaskWorked": null,
+    "lastUpdate": "{{INIT_TIMESTAMP}}",
+    "summary": "Initial project setup. Ready for loop 1.",
+    "validationHash": null
+  }
+}

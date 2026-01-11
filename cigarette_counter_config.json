@@ -1,0 +1,11 @@
+{
+  "quit_date": "2025-01-02",
+  "cigarettes_per_day": 20,
+  "price_per_pack": 7.5,
+  "cigarettes_per_pack": 20,
+  "currency": "\u00e2\u201a\u00ac",
+  "always_on_top": true,
+  "update_interval_ms": 1000,
+  "window_x": 1478,
+  "window_y": 119
+}

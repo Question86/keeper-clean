@@ -1,0 +1,16 @@
+{
+  "MILESTONE": {
+    "id": "01",
+    "name": "{{MILESTONE_NAME}}",
+    "version": 1,
+    "created": "{{INIT_DATE}}",
+    "status": "PENDING"
+  },
+  "GOALS": [
+    {
+      "id": "G001",
+      "description": "{{GOAL_1_DESCRIPTION}}",
+      "status": "PENDING"
+    }
+  ]
+}
