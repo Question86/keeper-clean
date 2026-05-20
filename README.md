@@ -8,7 +8,7 @@
 
 If this system saves you time or prevents costly workflow failures, support development through GitHub Sponsors:
 
-- https://github.com/sponsors/question86
+- https://github.com/sponsors/Question86
 - Sponsorship tiers and deliverables: [SPONSORSHIP.md](SPONSORSHIP.md)
 - Monetization playbook: [docs/GITHUB_MONETIZATION_PLAYBOOK.md](docs/GITHUB_MONETIZATION_PLAYBOOK.md)
 

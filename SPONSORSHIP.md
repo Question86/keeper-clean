@@ -2,26 +2,28 @@
 
 If this project helps your team, sponsor ongoing maintenance and feature work:
 
-- https://github.com/sponsors/question86
+- https://github.com/sponsors/Question86
 
 ## Sponsor Tiers
 
 ### Supporter - $5/month
 
-- Public thank-you in release notes (optional)
-- Access to sponsor-only project updates
+- Sustain maintenance, fixes, and weekly updates
 
 ### Builder - $25/month
 
-- Everything in Supporter
-- Priority response on bug reports
-- Voting access on roadmap items
+- Priority bug triage
+- Roadmap voting
+- Sponsor-only development updates
 
 ### Team - $200/month
 
-- Everything in Builder
-- One monthly architecture Q&A (async)
-- Sponsor badge or company name in README (optional)
+- Direct architecture guidance
+- Monthly priority planning touchpoint
+
+### One-Time Boost - $10
+
+- Fund a specific fix, release, or documentation sprint
 
 ## One-Time Sponsorship
 
