@@ -1,128 +1,133 @@
 # Loop-Based Project Architecture
 
-Clean implementation of a loop-based, memory-reset workflow system.
+**Clean implementation of memory-reset workflow system**
 
-This repository is designed to keep long-running AI-assisted projects stable by making state explicit, enforcing pointer-only navigation for core docs, and requiring reports for non-trivial work.
+[![Sponsor](https://img.shields.io/badge/Sponsor-question86-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/question86)
 
----
+## Support This Project
 
-## Canonical Truth Sources
+If this system saves you time or prevents costly workflow failures, support development through GitHub Sponsors:
 
-- System laws (non-negotiable): [ref:PROJECT_TECH_BASELINE.md#UNIVERSAL LAWS (GLOBAL / NON-NEGOTIABLE)|v:immutable|tags:baseline,laws|src:system]
-- Loop state authority: [ref:current.json#STATE|v:dynamic|tags:state|src:system]
-- Entry gate (PASS/BLOCKED): [ref:_LOOP_GATE.md#STATUS|v:current|tags:validator,gate|src:system]
-- Navigation map (pointer-only): [ref:NEURAL_CORTEX.md|v:dynamic|tags:cortex,pointer|src:system]
-- Active task queue (pointer-only): [ref:NEU.md#TASK QUEUE (PRIORITY ORDER)|v:dynamic|tags:tasks,active,pointer|src:system]
-- Closed/blocked tasks (pointer-only): [ref:Alt.md|v:dynamic|tags:tasks,closed,pointer|src:system]
+- https://github.com/sponsors/question86
+- Sponsorship tiers and deliverables: [SPONSORSHIP.md](SPONSORSHIP.md)
+- Monetization playbook: [docs/GITHUB_MONETIZATION_PLAYBOOK.md](docs/GITHUB_MONETIZATION_PLAYBOOK.md)
 
 ---
 
-## Quick Start (Operator)
+## What is This?
 
-### Run the Loop Cockpit
-
-- Windows: run [ref:START_COCKPIT.bat|v:1|tags:ops,run|src:system]
-- Unix: run [ref:START_COCKPIT.sh|v:1|tags:ops,run|src:system]
-
-This starts the Flask cockpit (defaults to `http://localhost:5000`) with the
-structured query/search API enabled. Run `python loop_cockpit.py
---generate-query-index` whenever you need to rebuild `docs/QUERY_INDEX.json`
-for high-signal searches across reports, tasks, and archives.
-
-### Fresh Loop Entry (New Chat Session)
-
-1. Ensure the gate is PASS: [ref:_LOOP_GATE.md#STATUS|v:current|tags:validator,gate|src:system]
-2. In a fresh AI session, start with: “Read _BOOTSTRAP.md” (when present).
-3. The entry protocol loads state + tasks and then deletes `_BOOTSTRAP.md` to signal the loop has started.
-
-The detailed entry sequence is also documented in:
-- [ref:NEURAL_CORTEX.md#ENTRY PROTOCOL (MANDATORY)|v:dynamic|tags:cortex,entry|src:system]
+A deterministic, loop-based project management system designed to:
+- Enforce **amnesia** through fresh AI sessions between loops
+- Prevent **context drift** and rule erosion over time
+- Maintain **single source of truth** via `current.json`
+- Ensure **discoverable** project state through pointer documents
 
 ---
 
-## Architecture Overview
+## Quick Start
 
-### Why loops?
+### For Fresh Loop Entry:
+1. Start a new chat window
+2. Tell AI: **"Read _BOOTSTRAP.md"**
+3. AI will validate gate, load state, and begin work
+4. _BOOTSTRAP.md self-deletes after entry
 
-Loops enforce periodic reset (amnesia-by-design) so the system can’t silently drift. Instead, it must “re-derive” its working context from explicit artifacts.
+### Core Documents (Read These):
+- **PROJECT_TECH_BASELINE.md** - Immutable system laws
+- **NEURAL_CORTEX.md** - Project navigation map
+- **current.json** - Current loop state (authoritative)
+- **_LOOP_GATE.md** - Entry validator
 
-### What makes this reliable?
-
-- Single state authority: [ref:current.json|v:dynamic|tags:state|src:system]
-- Gate before work: [ref:_LOOP_GATE.md|v:current|tags:validator,gate|src:system]
-- Pointer-only core docs (navigation, not content)
-- Report-first requirement for non-trivial work
-- Immutable archives per loop
-
-For a deeper file-by-file map and the operational lifecycle, see:
-- [ref:docs/ARCHITECTURE.md|v:1|tags:docs,architecture|src:doc]
-- [ref:docs/OPS_PROTOCOLS.md|v:1|tags:ops|src:doc]
+### Entry Flow:
+```
+_BOOTSTRAP.md → _LOOP_GATE.md → current.json → NEURAL_CORTEX.md → NEU.md → [TASK]
+```
 
 ---
 
-## Repository Layout (High Level)
+## Architecture Principles
+
+1. **Amnesia is a Feature**  
+   Fresh chat session required between loops. Forces explicit knowledge crystallization.
+
+2. **Single Source of Truth**  
+   `current.json` owns loop state. No hardcoded IDs in markdown files.
+
+3. **Pointer-Only Core**  
+   Core documents (NEURAL_CORTEX, NEU, ALT) contain references only, never content.
+
+4. **Gate Validation**  
+   _LOOP_GATE.md validates entry conditions. BLOCKED status stops all work.
+
+5. **Deterministic Naming**  
+   All files use canonical, zero-padded names (ARCHIV_0001.md, TASK_0042, etc.)
+
+---
+
+## File Structure
 
 ```
 Keeper-Clean/
-├── PROJECT_TECH_BASELINE.md      # Immutable laws
-├── current.json                  # State authority
-├── _LOOP_GATE.md                 # Entry validator (generated)
-├── NEURAL_CORTEX.md              # Pointer-only navigation map
-├── NEU.md                        # Pointer-only active task queue
-├── Alt.md                        # Pointer-only closed/blocked tasks
-├── tasks/                        # Task specs (task_TASK_XXXX.md)
-├── reports/                      # Task reports (report_TASK_XXXX_LYY_vNN.md)
-├── archive/                      # Immutable loop archives (ARCHIV_XXXX.md)
-├── docs/                         # Ops + generated indices
-└── templates/                    # Cockpit UI templates
+├── PROJECT_TECH_BASELINE.md    # Immutable laws
+├── NEURAL_CORTEX.md            # Navigation map
+├── current.json                # State authority
+├── _LOOP_GATE.md               # Entry validator
+├── _BOOTSTRAP.md               # Fresh session entry (ephemeral)
+├── NEU.md                      # Active task queue
+├── Alt.md                      # Closed/blocked tasks
+├── milestone_01.json           # Goal tracking
+├── knownissues.json            # Blocker registry
+├── archive/                    # Immutable loop history
+│   └── ARCHIV_XXXX.md
+└── docs/
+    └── OPS_PROTOCOLS.md        # Process documentation
 ```
 
 ---
 
-## Common Workflows
+## Loop Lifecycle
 
-### Add a task
+### 1. Loop Active
+- Work on tasks from NEU.md
+- Create reports: `report_TASK_XXXX_LXX_vNN.md`
+- Update task references
 
-1. Create a spec under [ref:tasks/|v:dynamic|tags:tasks|src:system] (e.g. `tasks/task_TASK_0042.md`).
-2. Add a pointer to [ref:NEU.md|v:dynamic|tags:tasks,active,pointer|src:system] in priority order.
+### 2. Loop Finalization
+- AI creates ARCHIV_XXXX.md
+- Sets current.json status = "FINALIZED"
+- Tells human: "Move ARCHIV to /archive/"
 
-### Execute a task
+### 3. Human Handoff
+- Move ARCHIV_XXXX.md → /archive/
+- Update current.json: status = "READY_FOR_RESET", loop++
+- Close chat window
 
-1. Create a report under [ref:reports/|v:dynamic|tags:reports|src:system] before making non-trivial changes.
-2. Implement, validate, and document outcomes in the report.
-3. Move the task pointer from [ref:NEU.md|v:dynamic|tags:tasks,active,pointer|src:system] → [ref:Alt.md|v:dynamic|tags:tasks,closed,pointer|src:system] with the report ref.
-
-### Generate indices / validate structure
-
-- Lint: `python loop_cockpit.py --lint`
-- History index: `python loop_cockpit.py --generate-history-index`
-- Query/search index: `python loop_cockpit.py --generate-query-index`
-
----
-
-## Seed Template Sync
-
-Keep the distributable SEED_TEMPLATE folder aligned with the live prototype by
-running:
-
-```
-python sync_seed_template.py
-```
-
-- Add `--dry-run` to preview the copies without touching disk.
-- Use `--only path1 path2` to sync a subset of managed files.
-- Run `python sync_seed_template.py --list` to review the curated set of
-	architecture/automation files that stay in lockstep with the template.
-
-This guarantees new projects inherit the current cockpit, guardrails, search
-engine tooling, and documentation without manually cherry-picking files.
+### 4. Fresh Loop Start
+- Start new chat session
+- Tell AI: "Read _BOOTSTRAP.md"
+- AI validates, loads state, begins work
 
 ---
 
-## Notes
+## Key Features
 
-- `_BOOTSTRAP.md` is an ephemeral entry artifact: it exists during reset and must be deleted after entry.
-- Do not hardcode dynamic loop state in docs; always defer to [ref:current.json#STATE|v:dynamic|tags:state|src:system] and the gate.
+✓ **No Context Drift** - Fresh AI session forces rule rediscovery  
+✓ **No Hardcoded State** - current.json is single source of truth  
+✓ **Entry Validation** - _LOOP_GATE.md prevents broken state entry  
+✓ **Clear Handoff** - _BOOTSTRAP.md guides session start  
+✓ **Immutable History** - Archive files never edited  
+✓ **Pointer Navigation** - Core docs reference, never contain content  
+
+---
+
+## Status
+
+**Current Loop:** 1 (initial)  
+**Status:** ACTIVE  
+**Gate:** PASS  
+**Architecture:** Stable  
+
+Ready for first task assignment.
 
 ---
 
