@@ -1,0 +1,24 @@
+{
+  "ISSUES": {
+    "BLOCKERS": [],
+    "RESOLVED": [
+      {
+        "id": "LOOP-001",
+        "title": "Network Cockpit READY_FOR_RESET State Logic Mismatch",
+        "severity": "high",
+        "status": "fixed",
+        "dateReported": "2025-01-26",
+        "dateResolved": "2025-01-26",
+        "description": "Network Cockpit treated READY_FOR_RESET as an active start state with automated bootstrap injection, breaking the expected transitional workflow. Should display 'BETWEEN LOOPS' interface with manual session start instructions.",
+        "rootCause": "Divergent UI logic between cockpit.html and network_cockpit.html - READY_FOR_RESET was incorrectly treated as actionable state rather than transitional pause",
+        "fix": "Modified network_cockpit.html loadLoopStatus function (lines ~1597-1661) to match original cockpit behavior: removed erroneous 'START LOOP' button, added bootstrapExists flag check, display manual instructions for session restart",
+        "filesChanged": ["network_cockpit.html"],
+        "principle": "Don't automate transitional states - READY_FOR_RESET is a pause point requiring manual session restart, not an automation trigger"
+      }
+    ]
+  },
+  "METADATA": {
+    "lastUpdate": "2025-01-26T23:45:00Z",
+    "version": 2
+  }
+}

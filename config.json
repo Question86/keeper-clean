@@ -1,5 +1,0 @@
-{
-  "LEGACY_ARCHIVES": [1, 2, 3],
-  "ARCHIVE_VALIDATION_SKIP_BEFORE": 4,
-  "NOTES": "Legacy archives (loops 1-3) use older format and are exempt from structure validation"
-}

@@ -1,0 +1,13 @@
+<!-- AI_BREADCRUMB: c9e4f168b20ec6dd | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T18:27:27Z -->
+<!-- AI_BREADCRUMB: 5f34e89ce3b6baa2 | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T18:31:30Z -->
+<!-- AI_BREADCRUMB: 195fd3b272e4aad6 | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T19:47:55Z -->
+<!-- AI_BREADCRUMB: d86ca8005e203061 | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T21:01:38Z -->
+<!-- AI_BREADCRUMB: af576af4b94787c3 | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T21:04:05Z -->
+<!-- AI_BREADCRUMB: 136ee1bdf0daf7e1 | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T21:58:28Z -->
+<!-- AI_BREADCRUMB: afd8b5a5ab5e917f | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T22:02:23Z -->
+<!-- AI_BREADCRUMB: c69204de67eb4c9f | SRC: confirm-bootstrap | OP: access | TS: 2026-02-15T23:20:49Z -->
+<!-- AI_BREADCRUMB: 7c3738815be32c9b | SRC: confirm-bootstrap | OP: access | TS: 2026-02-16T00:47:31Z -->
+<!-- AI_BREADCRUMB: 251631e689d9903d | SRC: confirm-bootstrap | OP: access | TS: 2026-02-16T01:40:19Z -->
+<!-- AI_BREADCRUMB: 4e1295e551c6cdac | SRC: confirm-bootstrap | OP: access | TS: 2026-02-16T02:14:20Z -->
+<!-- AI_BREADCRUMB: 89bdb6510dc356d1 | SRC: confirm-bootstrap | OP: access | TS: 2026-02-16T03:53:50Z -->
+<!-- AI_BREADCRUMB: c31bb3572638abb3 | SRC: confirm-bootstrap | OP: access | TS: 2026-02-16T04:52:44Z -->

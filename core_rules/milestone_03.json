@@ -1,0 +1,80 @@
+{
+  "MILESTONE": {
+    "id": "03",
+    "name": "AI Integrity Architecture",
+    "version": 1,
+    "created": "2026-01-25",
+    "status": "PLANNING",
+    "prototypeStatus": "NOT_STARTED",
+    "refocus_initiated": "2026-01-27",
+    "refocus_tasks": [
+      "TASK_0172",
+      "TASK_0173"
+    ],
+    "notes": "Critical milestone goals identified as lost track. Reference tasks created to bring renewed focus to AI integrity vulnerabilities."
+  },
+  "GOALS": [
+    {
+      "id": "G001",
+      "description": "Completely suppress AI ability to pretend false-positive results via system architecture",
+      "status": "NOT_STARTED",
+      "refocus_tasks": [
+        "TASK_0172"
+      ],
+      "notes": "Reference task created to bring focus back to this critical AI integrity goal"
+    },
+    {
+      "id": "G002",
+      "description": "Implement reliable protection against AI jailbreak bypass of canonical state structures. Prevent direct file manipulation that violates guardrails. See reports/report_INCIDENT_AI_JAILBREAK_L61_v01.md and knownissues.json BLOCKER_0002",
+      "status": "NOT_STARTED",
+      "refocus_tasks": [
+        "TASK_0173"
+      ],
+      "notes": "Reference task created to address documented jailbreak vulnerability from Loop 61"
+    }
+  ],
+  "PLANNING_HORIZONS": {
+    "short_term": {
+      "loop_range": [
+        1,
+        5
+      ],
+      "priority_weight": 0.6,
+      "focus": "immediate_execution"
+    },
+    "mid_term": {
+      "loop_range": [
+        5,
+        20
+      ],
+      "priority_weight": 0.3,
+      "focus": "milestone_progress"
+    },
+    "long_term": {
+      "loop_range": [
+        20,
+        50
+      ],
+      "priority_weight": 0.1,
+      "focus": "strategic_scaling"
+    }
+  },
+  "TOKEN_GOVERNANCE": {
+    "budget_policy": {
+      "safe_zone_pct": 50,
+      "caution_zone_pct": 75,
+      "conservation_zone_pct": 85,
+      "emergency_zone_pct": 95
+    },
+    "allocation": {
+      "short_term": 0.3,
+      "mid_term": 0.5,
+      "long_term": 0.2
+    },
+    "rules": [
+      "Prioritize short_term goals in conservation/emergency zones.",
+      "Defer long_term acquisition when token zone is emergency or abort.",
+      "Require milestone-aware relevance for external knowledge imports."
+    ]
+  }
+}
