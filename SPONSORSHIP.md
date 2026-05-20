@@ -3,6 +3,10 @@
 If this project helps your team, sponsor ongoing maintenance and feature work:
 
 - https://github.com/sponsors/Question86
+- Supporter ($5/month): https://github.com/sponsors/Question86/sponsorships?tier_id=ST_kwDOBsgOBs4ACXHq
+- One-time boost ($10): https://github.com/sponsors/Question86/sponsorships?tier_id=ST_kwDOBsgOBs4ACXHt
+- Builder ($25/month): https://github.com/sponsors/Question86/sponsorships?tier_id=ST_kwDOBsgOBs4ACXHs
+- Team ($200/month): https://github.com/sponsors/Question86/sponsorships?tier_id=ST_kwDOBsgOBs4ACXHr
 
 ## Sponsor Tiers
 

@@ -2,13 +2,15 @@
 
 **Clean implementation of memory-reset workflow system**
 
-[![Sponsor](https://img.shields.io/badge/Sponsor-question86-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/question86)
+[![Sponsor](https://img.shields.io/badge/Sponsor-question86-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/Question86)
 
 ## Support This Project
 
 If this system saves you time or prevents costly workflow failures, support development through GitHub Sponsors:
 
 - https://github.com/sponsors/Question86
+- Quick support: [$5/month](https://github.com/sponsors/Question86/sponsorships?tier_id=ST_kwDOBsgOBs4ACXHq)
+- One-time boost: [$10 once](https://github.com/sponsors/Question86/sponsorships?tier_id=ST_kwDOBsgOBs4ACXHt)
 - Sponsorship tiers and deliverables: [SPONSORSHIP.md](SPONSORSHIP.md)
 - Monetization playbook: [docs/GITHUB_MONETIZATION_PLAYBOOK.md](docs/GITHUB_MONETIZATION_PLAYBOOK.md)
 
